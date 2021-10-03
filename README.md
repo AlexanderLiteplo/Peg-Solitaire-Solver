@@ -1,2 +1,2 @@
 # Peg-Solitaire-Solver
-Solving Peg Solitaire with DFS
+Solving Peg Solitaire with DFS. This is super cool - I use depth first search to generate every possible game of Peg Solitaire and find solution. My Computer is Unable to solve it currently because it keeps runnng out of heap. I've been able to explore over 22,700,000 game states, but there are 2^33 (~8 billion) possible board states - different from game states but a decent rough estimate. I employ you to try running my test function testPlayGame to see if your computer has enough heap to cronch these numbers and gain infinite clout from my mom when you go to her house and solve peg solitaire after memorizing the path that my code showed you.
