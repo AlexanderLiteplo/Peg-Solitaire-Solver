@@ -1,18 +1,13 @@
-import java.util.ArrayList;
+
 
 public class Node {
     long code;
     byte[] gameBoard;
-    ArrayList<Node> adjacentNodes;
-    Node parent;
-
+    int numPegs;
 
     public Node(byte[] gameBoard) {
         code = 0;
-
-        parent = null;
         this.gameBoard = gameBoard;
-        adjacentNodes = new ArrayList<>();
         generateCode();
     }
 
@@ -20,9 +15,6 @@ public class Node {
         return code;
     }
 
-    public void setParent(Node parent) {
-        this.parent = parent;
-    }
 
     public byte[] getGameBoard() {
         return gameBoard;
@@ -32,20 +24,12 @@ public class Node {
     //generates unique code for each node based on
     // game board
     private void generateCode() {
-        int i = 0;
-        for (long num : gameBoard) {
+        for (byte num : gameBoard) {
             code = code << 1;
             code += num;
-
-//            System.out.println(i++);
-//            System.out.println(Long.toBinaryString(code));
+            if(num == 1)
+            numPegs++;
         }
-//        System.out.println(code);
-    }
-
-
-    public void addAdjacentNode(Node adj) {
-        adjacentNodes.add(adj);
     }
 
 

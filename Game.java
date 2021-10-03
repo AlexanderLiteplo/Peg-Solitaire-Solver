@@ -5,75 +5,39 @@ public class Game {
     final int centerLocation;
     Node goal;
     Node root;
-    Map<Long, Boolean> nodeMap;
+    Map<Long, Long> nodeMap;
     ArrayList<Node> solutionPath;
-    Stack<Node> stackFrontier;
+    Stack<Long> stackFrontier;
     LinkedList<Node> queueFrontier;
-    ArrayList<Node> endBoards;
+    Map<Long,Boolean> endBoards;
+    long rootReached;
 
-    private int[][] grid;
 
     //a map of possible jumps that can be made to any given
     //spot on the
     Map<Integer, ArrayList<Integer>> jumps;
 
     public Game() {
+        rootReached = -1;
         stackFrontier = new Stack<>();
-        endBoards = new ArrayList<>();
+        endBoards = new HashMap<Long, Boolean>();
         queueFrontier = new LinkedList<>();
         boardSize = 33;
         centerLocation = 16;
         solutionPath = new ArrayList<>();
         nodeMap = new HashMap<>();
-        System.out.println("making goal");
+
         goal = new Node(generateGoalNode());
-        System.out.println("making root");
+
         root = new Node(generateRootNode());
 
-        nodeMap.put(root.getCode(), true);
+        nodeMap.put(root.getCode(),rootReached );
 
         jumps = new HashMap<>(33);
         initializeJumps();
 
 
     }
-
-    public void playGameQueue() {
-        //start at a node
-        //generate adjacent nodes
-        //add adjacent nodes to stack
-        //start again
-        //if goal node reached stop
-        //generate solution path
-        int nodesExpanded = 0;
-        stackFrontier.push(root);
-        queueFrontier.add(root);
-
-        Node lastVisited = null;
-        while (!queueFrontier.isEmpty()) {
-            Node curr = queueFrontier.pollFirst();
-            nodesExpanded++;
-
-            //if goal reached then HALT
-            if (curr.code == goal.code) {
-                goal = curr;
-                System.out.println("Solution found. " + nodesExpanded + " nodes expanded... Wow thats alot of nodes man.");
-                printSolutionPath();
-                break;
-            }
-
-            //otherwise continue to traverse
-            exploreAdjacentNodesQueue(curr);
-            lastVisited = curr;
-        }
-
-        lastVisited.printGameBoard();
-        System.out.println("Solution not found. " + nodesExpanded + " Nodes Expanded.");
-
-
-
-    }
-
 
     public void playGame() {
         //start at a node
@@ -83,79 +47,104 @@ public class Game {
         //if goal node reached stop
         //generate solution path
         int nodesExpanded = 0;
-        stackFrontier.push(root);
+        stackFrontier.push(root.getCode());
 
-        Node lastVisited = null;
         while (!stackFrontier.isEmpty()) {
-            Node curr = stackFrontier.pop();
+            long curr = stackFrontier.pop();
             nodesExpanded++;
-//            if(nodesExpanded < 20) {
-//                curr.printGameBoard();
-//            }
-
-            if(nodeMap.size() % 100000 == 0) {
-                System.out.println(nodeMap.size());
-                curr.printGameBoard();
-            }
 
             //if goal reached then HALT
-            if (curr.code == goal.code) {
-                goal = curr;
-                System.out.println("Solution found. " + nodesExpanded + " nodes expanded... Wow thats alot of nodes man.");
-                printSolutionPath();
+            if (curr == goal.getCode()) {
+                printResult(nodesExpanded);
                 break;
             }
 
             //otherwise continue to traverse
             exploreAdjacentNodes(curr);
-            lastVisited = curr;
+
         }
 
-        lastVisited.printGameBoard();
-        System.out.println("Solution not found. " + nodesExpanded + " Nodes Expanded.");
 
+    }
 
-
+    private void printResult(int nodesExpanded) {
+        System.out.println("Solution found. " + nodesExpanded + " nodes expanded... Wow thats alot of nodes man.");
+        System.out.println("Here is the solution path: ");
+        printSolutionPath();
+        System.out.println("There are " + endBoards.size() + " possible endings to peg Solitaire");
+        System.out.println("here are the possible endings with ony one peg remaining: ");
+        printEndBoards();
     }
 
     public void printEndBoards() {
-        System.out.println("There are this many endboards: " + endBoards.size());
-        for(Node n: endBoards)
-            n.printGameBoard();
+
+        for (long code: endBoards.keySet()) {
+            Node node = convertCodeToNode(code);
+            if(node.numPegs < 2 )
+             node.printGameBoard();
+        }
     }
 
     private void printSolutionPath() {
-        Node curr = goal;
-        while(curr.code != root.code) {
-            curr.printGameBoard();
-            curr = curr.parent;
+        long currCode = goal.getCode();
+        System.out.println("Solution Path: ");
+        Stack<Node> solStack = new Stack<>();
+        while(currCode != rootReached) {
+            solStack.push(convertCodeToNode(currCode));
+
+            currCode = nodeMap.get(currCode);
+        }
+
+        while(!solStack.isEmpty()) {
+            solStack.pop().printGameBoard();
         }
     }
 
+    //Converts game board code to a Node
+    public Node convertCodeToNode(long currCode) {
+        Stack<Byte> stack = new Stack<>();
+        for(int i = 0; i < boardSize; i++) {
+            stack.push((byte) (currCode & 1));
+            currCode = currCode >> 1;
+
+        }
+        byte[] arr = new byte[boardSize];
+        for(int i = 0; i < boardSize; i ++) {
+            if(!stack.isEmpty()) {
+                arr[i] = stack.pop();
+            } else {
+                arr[i] = 0;
+            }
+        }
+
+        return new Node(arr);
+    }
+    //bug found where I was not appending zeros to gameBoard array so it had empty spots
+
+
     /*
-     * returns possible jumps to index of current nodes gameboard
+     * Generates and adds adjacent nodes to stack
      * */
-    public void exploreAdjacentNodes(Node node) {
+    public void exploreAdjacentNodes(long currCode) {
+        Node node = convertCodeToNode(currCode);
         byte[] currBoard = node.getGameBoard();
         boolean isEndBoard = true;
         for (int i = 0; i < boardSize; i++) {
             //find empty spot on game board
             if (currBoard[i] == 0) {
-                //get jumps
+                //get coordinates of spaces on board 2 away from empty spot
                 ArrayList<Integer> currJumps = jumps.get(i);
                 //find out if those jumps are possible with current board
                 for (int j = 0; j < currJumps.size(); j++) {
                     //if jumps possible then create a new node and add it to stack
-                    if (currBoard[currJumps.get(j)] == 1) {
+                    if (currBoard[currJumps.get(j)] == 1 && currBoard[findNewEmp(i,currJumps.get(j))] == 1 ) {
                         isEndBoard = false;
                         Node adjNode = makeAdjNode(currBoard, i, currJumps.get(j));
                         //add parent to adjNode
-
                         //check board not already seen
                         if(!nodeMap.containsKey(adjNode.getCode())) {
-                            adjNode.setParent(node);
-                            stackFrontier.push(adjNode);
-                            nodeMap.put(adjNode.getCode(),true);
+                            stackFrontier.push(adjNode.getCode());
+                            nodeMap.put(adjNode.getCode(), node.getCode());
                         }
                     }
                 }
@@ -163,44 +152,12 @@ public class Game {
             }
         }
 
-        if(isEndBoard)
-            endBoards.add(node);
+        if(isEndBoard && !endBoards.containsKey(currCode))
+            endBoards.put(currCode,true);
     }
+    //Bug causing game to keep jumping around infinitely and never reach end
+    //
 
-    /*
-     * returns possible jumps to index of current nodes gameboard
-     * */
-    public void exploreAdjacentNodesQueue(Node node) {
-        byte[] currBoard = node.getGameBoard();
-        boolean isEndBoard = true;
-        for (int i = 0; i < boardSize; i++) {
-            //find empty spot on game board
-            if (currBoard[i] == 0) {
-                //get jumps
-                ArrayList<Integer> currJumps = jumps.get(i);
-                //find out if those jumps are possible with current board
-                for (int j = 0; j < currJumps.size(); j++) {
-                    //if jumps possible then create a new node and add it to stack
-                    if (currBoard[currJumps.get(j)] == 1) {
-                        isEndBoard = false;
-                        Node adjNode = makeAdjNode(currBoard, i, currJumps.get(j));
-                        //add parent to adjNode
-
-                        //check board not already seen
-                        if(!nodeMap.containsKey(adjNode.getCode())) {
-                            adjNode.setParent(node);
-                            queueFrontier.add(adjNode);
-                            nodeMap.put(adjNode.getCode(),true);
-                        }
-                    }
-                }
-
-            }
-        }
-
-        if(isEndBoard)
-            endBoards.add(node);
-    }
 
     /*
     parentBoard == game of parent node
@@ -246,7 +203,7 @@ public class Game {
     }
 
 
-    //todo initialize map of possible jumps
+    //initializes map of all possible jumps (spaces on board two away orthogonally
     public void initializeJumps() {
         for (int i = 0; i < boardSize; i++) {
             jumps.put(i, generateJumps(i));
@@ -254,9 +211,9 @@ public class Game {
     }
 
     //generate list of all possible jumps to index
-    public ArrayList<Integer> generateJumps(int index) {
-        ArrayList<Integer> jumpIndexes = new ArrayList<>(4);
-        int ind = indexToGrid(index);
+    public ArrayList<Integer> generateJumps(int boardIndex) {
+        ArrayList<Integer> jumpIndexes = new ArrayList<>();
+        int ind = indexToGrid(boardIndex);
 
         //case 1 index is too close to left wall so has no left jump
         if (ind % 7 == 0 || ind % 7 == 1) {
@@ -310,7 +267,7 @@ public class Game {
             return grid - 2;
         } else if (grid < 12 && grid > 8) {
             return grid - 6;
-        } else if (grid < 33 && grid > 13) {
+        } else if (grid < 35 && grid > 13) {
             return grid - 8;
         } else if (grid < 40 && grid > 36) {
             return grid - 10;
@@ -322,9 +279,8 @@ public class Game {
     }
 
 
-    //todo sanitize an array of all of the 4 possible
-    //jumps to only ones that are on the board
-    //indexes must be grid indexes
+
+    //Array of grid indexes converted to an array of valid game board indexes
     public ArrayList<Integer> sanitize(ArrayList<Integer> arr) {
         for (int i = 0; i < arr.size(); i++) {
             int curr = gridToIndex(arr.get(i));
@@ -337,10 +293,6 @@ public class Game {
         return arr;
     }
 
-
-    private boolean isGoalNode(Node n) {
-        return n.code == goal.code;
-    }
 
     private byte[] generateGoalNode() {
         byte[] goalBoard = new byte[boardSize];

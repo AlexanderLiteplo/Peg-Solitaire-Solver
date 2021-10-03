@@ -7,9 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GameTest {
-    Node root;
-    long[] rootArr;
+
+
     Game game;
+
 
     @BeforeEach
     void before() {
@@ -22,7 +23,7 @@ public class GameTest {
     void testPlayGame() {
         game.playGame();
 //        game.playGameQueue();
-        game.printEndBoards();
+//        game.printEndBoards();
     }
 
     @Test
@@ -37,8 +38,7 @@ public class GameTest {
 
     @Test
     void testCode() {
-        assertEquals(Math.pow(2,16)
-                ,game.goal.getCode());
+        assertEquals(Math.pow(2,16),game.goal.getCode());
 
     }
 
@@ -49,6 +49,7 @@ public class GameTest {
         assertEquals(24, game.indexToGrid(16));
         assertEquals(38, game.indexToGrid(28));
         assertEquals(45,game.indexToGrid(31));
+        assertEquals(32,game.indexToGrid(24));
     }
 
     @Test
@@ -62,6 +63,7 @@ public class GameTest {
         assertEquals(-1, game.gridToIndex(12));
         assertEquals(-1, game.gridToIndex(35));
         assertEquals(-1,game.gridToIndex(47));
+
     }
 
     @Test
@@ -74,6 +76,11 @@ public class GameTest {
         assertTrue(arr.contains(23));
         assertTrue(arr.contains(7));
         assertTrue(arr.contains(11));
+
+        arr = game.generateJumps(24);
+        System.out.println(32 % 7);
+        assertTrue(arr.contains(26));
+        assertTrue(arr.contains(32));
 
         arr = game.generateJumps(31);
         assertTrue(arr.contains(23));
@@ -109,6 +116,7 @@ public class GameTest {
         assertEquals(4,game.findNewEmp(9,1));
         assertEquals(22,game.findNewEmp(21,23));
         assertEquals(29,game.findNewEmp(32,24));
+        assertEquals(25,game.findNewEmp(26,24));
     }
 
     @Test
@@ -130,6 +138,29 @@ public class GameTest {
 
 
     }
+
+    @Test
+    void testExploreAdjacentNode() {
+        byte[] arr = new byte[game.boardSize];
+        for(int i = 0; i < game.boardSize; i++) {
+            arr[i] = 1;
+        }
+        arr[16] = 0;
+        arr[15] = 0;
+        arr[18] = 0;
+        Node n = new Node(arr);
+        System.out.println("Node n");
+        n.printGameBoard();
+        System.out.println("exploring");
+        game.exploreAdjacentNodes(n.getCode());
+
+
+        game.exploreAdjacentNodes(game.goal.getCode());
+        System.out.println("!!!!!!!!!!!!");
+        game.exploreAdjacentNodes(game.root.getCode());
+    }
+
+
 
 
 
