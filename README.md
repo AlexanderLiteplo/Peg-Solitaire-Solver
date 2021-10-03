@@ -5,6 +5,8 @@ Code can be run in the main method of the RunGame class.
 
 If You are too lazy to run my code but still want to see what it generates, I got you!
 
+** Note - to view this properly formatted you have to look at the raw file.
+
 Solution Path: 
     ___    
    |111|
