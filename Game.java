@@ -71,8 +71,7 @@ public class Game {
         System.out.println("Solution found. " + nodesExpanded + " nodes expanded... Wow thats alot of nodes man.");
         System.out.println("Here is the solution path: ");
         printSolutionPath();
-        System.out.println("There are " + endBoards.size() + " possible endings to peg Solitaire");
-        System.out.println("here are the possible endings with ony one peg remaining: ");
+        System.out.println("DFS failed " + (endBoards.size() - 1) + " times at peg Solitaire Before finding the solution");
         printEndBoards();
     }
 
@@ -80,7 +79,7 @@ public class Game {
 
         for (long code: endBoards.keySet()) {
             Node node = convertCodeToNode(code);
-            if(node.numPegs < 2 )
+            if(node.numPegs == 1)
              node.printGameBoard();
         }
     }
