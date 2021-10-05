@@ -4,7 +4,7 @@ Solving Peg Solitaire with DFS. This is super cool - I use depth first search to
 Code can be run in the main method of the RunGame class.
 
 # Notes on the Design
-To save stoarage space I encoded the gameboards into a long, such that the latter 33 bits of the long each represent wether or not it's corresponding slot has a peg in it. I had to use a long because I needed 33 bits, and the next best was an int with 32 bits. See the method generateCode in the Node class for this. I then had to make a method to generate a Node from the long to print out the results afterwards. I used map<child code, parent code> to store the paths. The hardest part of the problem was building the data abstraction. In particular making an aglorithm that can read the board like a human does and then find what possible jumps can be made was very arduous.
+To save stoarage space I encoded the gameboards into a long, such that the latter 33 bits of the long each represent wether or not it's corresponding slot has a peg in it. I had to use a long because I needed 33 bits, and the next best was an int with 32 bits. See the method generateCode in the Node class for this. I then had to make a method to convert long back into a grid representaton so that I could find all of the next possible moves, and to print out the results afterwards. I used map<child code, parent code> to store the paths. The hardest part of the problem was building the data abstraction. In particular making an aglorithm that can read the board like a human does and then find what possible jumps can be made was very arduous.
 
 
 
