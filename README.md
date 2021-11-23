@@ -1,5 +1,5 @@
 # Peg-Solitaire-Solver
-Solving Peg Solitaire with DFS. I use depth-first search to generate every possible game of Peg Solitaire and find a solution.
+Solving Peg Solitaire with DFS. I use depth-first search to generate moves and find a solution.
 
 Code can be run in the main method of the RunGame class.
 
